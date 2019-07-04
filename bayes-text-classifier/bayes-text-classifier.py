@@ -2,9 +2,13 @@
 import os
 import jieba
 import random
+import sklearn
+from sklearn.naive_bayes import MultinomialNB
+import matplotlib.pyplot as plt
 
 folder_path = './Sample'
 stopwords_file = './stopwords_cn.txt'
+log_file = './bayes-text-classifier.log'
 
 def make_word_set(words_file):
 	words_set = set()
@@ -41,7 +45,7 @@ def text_processing(folder_path, text_size=0.2):
 	# 手动划分训练街和测试集
 	data_class_list = zip(data_list, class_list) # 将数据集和分类集一一对应
 	data_class_list = list(data_class_list)
-	# random.shuffle(data_class_list)	# 打乱数据
+	random.shuffle(data_class_list)	# 打乱数据
 
 	# 按照2-8占比划分数据
 	index = int(len(list(data_class_list)) * text_size) + 1 
@@ -66,7 +70,7 @@ def text_processing(folder_path, text_size=0.2):
 	return all_words_list, train_data_list, train_class_list, test_data_list, test_class_list
 	
 
-# 获得特征词
+# 获得特征词，竟然用这种方式？
 def words_dict(all_words_list, deleteN, stopwords_set=set()):
 	features_words = []
 	n = 1
@@ -76,12 +80,48 @@ def words_dict(all_words_list, deleteN, stopwords_set=set()):
 		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5:
 			features_words.append(all_words_list[t])			
 			n += 1
-		return features_words
 
+	with open(log_file, 'a', encoding = 'utf-8') as log:
+		log.write(' '.join(features_words))
+		log.write('-'*200)
+	return features_words
 
+# 文本特征
+def text_features(train_data_list, test_data_list, features_words):
+	def text_features(text, features_words):
+		text_words = set(text)
+		features = [1 if word in text_words else 0 for word in features_words]
+		return features
+	train_feature_list = [text_features(text, features_words) for text in train_data_list]
+	test_feature_list = [text_features(text, features_words) for text in test_data_list]
+	return train_feature_list, test_feature_list
+
+def text_classifier(train_feature_list, test_feature_list, train_class_list, test_class_list):
+	classifier = MultinomialNB().fit(train_feature_list, train_class_list)
+	# print(classifier)
+	test_accuracy = classifier.score(test_feature_list, test_class_list)
+	return test_accuracy
 
 
 if __name__ == '__main__':
 	stopwords_set = make_word_set(stopwords_file)
 	all_words_list, train_data_list, train_class_list, test_data_list, test_class_list = text_processing(folder_path)
-	features_words = words_dict(all_words_list, 0, stopwords_set)
+	deleteNs = range(0, 1000, 20)
+	test_accuracy_list = []
+
+	if os.path.exists(log_file):
+		os.remove(log_file)
+	
+	for deleteN in deleteNs:
+		features_words = words_dict(all_words_list, deleteN, stopwords_set)
+		text_features(train_data_list, test_data_list, features_words)
+		train_feature_list, test_feature_list = text_features(train_data_list, test_data_list, features_words)
+		test_accuracy = text_classifier(train_feature_list, test_feature_list, train_class_list, test_class_list)
+		test_accuracy_list.append(test_accuracy)
+
+	plt.plot(deleteNs, test_accuracy_list)
+	plt.xlabel('deleteNs')
+	plt.ylabel('test_accuracy')
+	plt.show()
+
+	

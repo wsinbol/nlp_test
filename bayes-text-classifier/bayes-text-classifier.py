@@ -101,9 +101,11 @@ def text_features(train_data_list, test_data_list, features_words):
 
 def text_classifier(train_feature_list, test_feature_list, train_class_list, test_class_list):
 	classifier = MultinomialNB().fit(train_feature_list, train_class_list)
-	# print(classifier)
+	# 测试 测试集文本的分类
+	print(classifier.predict(test_feature_list))
 	test_accuracy = classifier.score(test_feature_list, test_class_list)
 	return test_accuracy
+
 
 
 if __name__ == '__main__':

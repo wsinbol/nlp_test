@@ -74,16 +74,19 @@ def text_processing(folder_path, text_size=0.2):
 def words_dict(all_words_list, deleteN, stopwords_set=set()):
 	features_words = []
 	n = 1
+	# deleteN为0-980中间隔为20的数，生成的特征词维度基本都可以满足1000维
 	for t in range(deleteN, len(all_words_list), 1):
 		if n > 1000:
 			break
+		# 特征词不为小数,不为停用词，长度小于5
 		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5:
 			features_words.append(all_words_list[t])			
 			n += 1
 
 	with open(log_file, 'a', encoding = 'utf-8') as log:
 		log.write(' '.join(features_words))
-		log.write('-'*200)
+		log.write('【共个'+ str(len(features_words)) +'特征词】')
+
 	return features_words
 
 # 文本特征
@@ -106,19 +109,19 @@ def text_classifier(train_feature_list, test_feature_list, train_class_list, tes
 if __name__ == '__main__':
 	stopwords_set = make_word_set(stopwords_file)
 	all_words_list, train_data_list, train_class_list, test_data_list, test_class_list = text_processing(folder_path)
-	deleteNs = range(0, 1000, 20)
-	test_accuracy_list = []
-
+	
 	if os.path.exists(log_file):
 		os.remove(log_file)
 	
+	deleteNs = range(0, 1000, 20)
+	test_accuracy_list = []
+
 	for deleteN in deleteNs:
 		features_words = words_dict(all_words_list, deleteN, stopwords_set)
 		text_features(train_data_list, test_data_list, features_words)
 		train_feature_list, test_feature_list = text_features(train_data_list, test_data_list, features_words)
 		test_accuracy = text_classifier(train_feature_list, test_feature_list, train_class_list, test_class_list)
 		test_accuracy_list.append(test_accuracy)
-
 	plt.plot(deleteNs, test_accuracy_list)
 	plt.xlabel('deleteNs')
 	plt.ylabel('test_accuracy')

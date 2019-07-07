@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer
 corpus = [
-    '我 爱 天安门',
+    '我 爱 北京 天安门',
     '天安门 广场',
     '北京 天安门 北京',
 ]
@@ -10,7 +10,8 @@ test = [
 	'北京 王府井',
 ]
 
-vectorizer = CountVectorizer(stop_words=['北京','广场'])
+stop_words=['北京','广场']
+vectorizer = CountVectorizer(stop_words=None)
 print(vectorizer.get_stop_words())
 X = vectorizer.fit_transform(corpus)
 

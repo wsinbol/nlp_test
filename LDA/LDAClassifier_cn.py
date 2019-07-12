@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 import re
 import jieba
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer 
 from sklearn.decomposition import LatentDirichletAllocation
+import numpy as np
 
+# 搜狗样本语料
 origin_data_path = './news_data.txt'
 stopwords_file = './stopwords_cn.txt'
 n_top_words = 40
@@ -39,14 +41,42 @@ def text_processing(file_path):
 
 def make_count_vectorizer(corpus):
 	vectorizer = CountVectorizer(stop_words=None)
-	# 未进行归一化
+	# 计算词频，未进行归一化
 	tf = vectorizer.fit_transform(corpus)
 	feature_names = vectorizer.get_feature_names()
 	return tf,feature_names
 
+def make_tfidf(tf):
+	transformer = TfidfTransformer()
+	tfidf = transformer.fit_transform(tf)
+	return tfidf
+
 
 corpus = text_processing(origin_data_path)
 tf, feature_names = make_count_vectorizer(corpus)
+tfidf = make_tfidf(tf)
+
+rs = tf.toarray()
+rows, cols = np.shape(rs)
+
+tfidf_rs = tfidf.toarray()
+
+with open('test.txt', 'w', encoding='utf-8') as f:
+	for row in range(rows):
+		f.write('\n---'+str(row)+"---\n")
+
+		index_list_tf = rs[row].argsort()[:-11:-1]
+		index_list_tfidf = tfidf_rs[row].argsort()[:-11:-1]
+		f.write('   tf:')
+		for index in index_list_tf:
+			f.write(feature_names[index]+str(rs[row][index]))
+		
+		f.write("\ntfidf:")
+		for index in index_list_tfidf:
+			f.write(feature_names[index]+str(tfidf_rs[row][index])[:5])
+		
+exit()
+
 lda = LatentDirichletAllocation(n_components=10,
                                     max_iter=8000,
                                     learning_method='batch',

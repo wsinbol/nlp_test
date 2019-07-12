@@ -22,7 +22,8 @@ def clean_email_text(text):
 	for letter in text:
 		if letter.isalpha() or letter == ' ':
 			pure_text += letter
-	text = " ".join(word for word in pure_text.split() if len(word) > 1)
+
+	text = " ".join([word for word in pure_text.split() if len(word) > 1])
 	return text
 
 docs = df['ExtractedBodyText']
@@ -43,8 +44,9 @@ stoplist = ['very', 'ourselves', 'am', 'doesn', 'through', 'me', 'against', 'up'
 'any', 'that', 'for', 'shouldn', 'don', 'do', 'there', 'doing', 'an', 'or', 'ain', 'hers', 'wasn', 
 'weren', 'above', 'a', 'at', 'your', 'theirs', 'below', 'other', 'not', 're', 'him', 'during', 'which']
 
+# 先过滤停用词
 texts = [[word for word in doc.lower().split() if word not in stoplist] for doc in docs]
-
+# 再生成词向量
 dictionary = corpora.Dictionary(texts)
 
 corpus = [dictionary.doc2bow(text) for text in texts]
@@ -57,14 +59,20 @@ lda = gensim.models.ldamodel.LdaModel(corpus=corpus, id2word=dictionary, num_top
 # 查看#10分类
 # print(lda.print_topic(18, topn=200))
 
-# 打印所有主题,20个主题的前5个词
-lda.print_topics(num_topics=20, num_words=5)
+# 所有主题,20个主题的前5个词
+# lda.print_topics(num_topics=20, num_words=5)
 
 print('-------------------预测开始---------------------')
-print(dictionary[99],dictionary[331])
-sentence = "I love our country, and I believe in our people, and I will never, ever quit on you. No matter what"
+# 模拟出现的两个词
+print('待预测的词语为：',dictionary[99],dictionary[331])
+# 预测过程
+result = lda.get_document_topics([(99,1),(331,1)])
 
-print(lda.get_document_topics([(99,1),(331,1)]))
+topic, weight = sorted(result, key = lambda x:x[1], reverse = True)[0]
+print('预测分类为#',topic)
+print('分类#',topic,'的TOP5权重词语：',lda.print_topic(topic, topn=5))
+
+
 
 
 

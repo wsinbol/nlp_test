@@ -12,8 +12,13 @@ test = [
 
 stop_words=['北京','广场']
 vectorizer = CountVectorizer(stop_words=None)
-print(vectorizer.get_stop_words())
+# print(vectorizer.get_stop_words())
 X = vectorizer.fit_transform(corpus)
+print(X)
+
+X = vectorizer.fit(corpus)
+print(X.transform(corpus))
+exit()
 
 # 词袋向量
 print(vectorizer.get_feature_names())
@@ -23,5 +28,10 @@ print(X)
 print(X.toarray())
 
 print('-'*4)
+
 # 新数据集在词袋向量中的统计
-print(vectorizer.transform(test))
+Y = vectorizer.transform(test)
+# 计数形式
+print(Y)
+# 矩阵形式
+print(Y.toarray())

@@ -53,14 +53,16 @@ def make_tfidf(tf):
 
 
 corpus = text_processing(origin_data_path)
+
 tf, feature_names = make_count_vectorizer(corpus)
 tfidf = make_tfidf(tf)
 
 rs = tf.toarray()
 rows, cols = np.shape(rs)
-
 tfidf_rs = tfidf.toarray()
 
+# TF 和 TF-IDF top10 特征词对比
+'''
 with open('test.txt', 'w', encoding='utf-8') as f:
 	for row in range(rows):
 		f.write('\n---'+str(row)+"---\n")
@@ -74,8 +76,8 @@ with open('test.txt', 'w', encoding='utf-8') as f:
 		f.write("\ntfidf:")
 		for index in index_list_tfidf:
 			f.write(feature_names[index]+str(tfidf_rs[row][index])[:5])
-		
-exit()
+
+'''
 
 lda = LatentDirichletAllocation(n_components=10,
                                     max_iter=8000,
@@ -83,12 +85,16 @@ lda = LatentDirichletAllocation(n_components=10,
                                     evaluate_every=200,
                                     perp_tol=0.01)
 model = lda.fit(tf)
-# print(model.components_)
+for topic_idx, topic in enumerate(model.components_):
+	print(topic_idx,topic)
 
-# for topic_idx, topic in enumerate(model.components_):
-	# print(topic_idx, topic)
+model = lda.transform(tf)
+for topic_idx, topic in enumerate(model):
+	print(topic_idx,topic)
+exit()
 
-with open('res_topic_word.txt', 'w') as f:
+model = lda.fit(tfidf)
+with open('res_topic_word_tfidf.txt', 'w') as f:
         f.write("Topic, Top Word\n")
         # components_ : array, [n_components, n_features]
         # components_[i, j] can be viewed as pseudocount that represents the number of times word j was assigned to topic i
@@ -102,4 +108,22 @@ with open('res_topic_word.txt', 'w') as f:
             for word, weight in topic_word_dist:
                 f.write(word + '#' + str(weight) + ';')
             f.write('\n')
+
+model = lda.fit(tf)
+with open('res_topic_word_tf.txt', 'w') as f:
+        f.write("Topic, Top Word\n")
+        # components_ : array, [n_components, n_features]
+        # components_[i, j] can be viewed as pseudocount that represents the number of times word j was assigned to topic i
+        for topic_idx, topic in enumerate(model.components_):
+        # for topic_idx, topic in model.components_:
+            f.write(str(topic_idx) + ',')
+            # topic.argsort()[:-n_top_words - 1:-1] 降序返回特征词在词袋中的索引
+            # (feature_names[i], topic[i]) 特征词向量自始至终都是一致的
+            topic_word_dist = [(feature_names[i], topic[i]) for i in topic.argsort()[:-n_top_words - 1:-1]]
+            print(topic_word_dist)
+            for word, weight in topic_word_dist:
+                f.write(word + '#' + str(weight) + ';')
+            f.write('\n')
+
+
 

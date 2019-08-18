@@ -1,4 +1,8 @@
 # -*- coding:utf-8 -*-
+
+文章有错误！！！
+尚未修正！！！
+
 import os
 import jieba
 import random
@@ -79,7 +83,8 @@ def words_dict(all_words_list, deleteN, stopwords_set=set()):
 		if n > 1000:
 			break
 		# 特征词不为小数,不为停用词，长度小于5
-		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5:
+		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set \
+		and 1 < len(all_words_list[t]) < 5:
 			features_words.append(all_words_list[t])			
 			n += 1
 

@@ -30,7 +30,7 @@ def text_processing(folder_path, text_size=0.2):
 		files = os.listdir(new_folder_path)
 		num = 1
 		for file in files:
-			if num > 100:
+			if num > 2:
 				break
 
 			with open(os.path.join(new_folder_path, file), 'r', encoding = 'utf-8') as f:
@@ -45,7 +45,7 @@ def text_processing(folder_path, text_size=0.2):
 	# 手动划分训练街和测试集
 	data_class_list = zip(data_list, class_list) # 将数据集和分类集一一对应
 	data_class_list = list(data_class_list)
-	random.shuffle(data_class_list)	# 打乱数据
+	# random.shuffle(data_class_list)	# 打乱数据
 
 	# 按照2-8占比划分数据
 	index = int(len(list(data_class_list)) * text_size) + 1 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 	if os.path.exists(log_file):
 		os.remove(log_file)
 	
-	deleteNs = range(0, 1000, 20)
+	deleteNs = range(0, 2, 20)
 	test_accuracy_list = []
 
 	for deleteN in deleteNs:
